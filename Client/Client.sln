@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client.csproj", "{FD5D35AC-628B-40E0-A364-7374D6F035C9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MatrixLibrary", "..\MatrixLibrary\MatrixLibrary.csproj", "{7C62B76C-FEE1-4ECD-88D7-62C6505500BF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{FD5D35AC-628B-40E0-A364-7374D6F035C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD5D35AC-628B-40E0-A364-7374D6F035C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD5D35AC-628B-40E0-A364-7374D6F035C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C62B76C-FEE1-4ECD-88D7-62C6505500BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C62B76C-FEE1-4ECD-88D7-62C6505500BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C62B76C-FEE1-4ECD-88D7-62C6505500BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C62B76C-FEE1-4ECD-88D7-62C6505500BF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

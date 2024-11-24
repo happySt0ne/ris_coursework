@@ -1,7 +1,6 @@
-using Mtrx;
 using ListExt;
 
-namespace BlockMatrx;
+namespace Matrices;
 
 public class BlockMatrix {
   private List<List<Matrix>> _matrix { get; }

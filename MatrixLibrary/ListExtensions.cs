@@ -1,4 +1,4 @@
-using Mtrx;
+using Matrices;
 
 namespace ListExt;
 

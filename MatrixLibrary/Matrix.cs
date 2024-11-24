@@ -1,6 +1,6 @@
 using ListExt;
 
-namespace Mtrx;
+namespace Matrices;
 
 public class Matrix { 
   private List<List<double>> _matrix { get; }
