@@ -1,29 +1,28 @@
-﻿using System.Net.Sockets;
+﻿using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using Matrices;
-using network;
 
-public partial class Program {
-  private static void Main(string[] args) {
-    TcpHelper.ReadIps("../ComputingNodes.txt");
+TcpListener listener = null;
 
-    using (TcpClient client = new(TcpHelper.Ips[0].ip, TcpHelper.Ips[0].port)) {
-      System.Console.WriteLine("подключено к серверу");
+IPAddress localAddr = IPAddress.Parse("0.0.0.0");
 
-      NetworkStream stream = client.GetStream();
+listener = new(localAddr, 8888);
 
-      string message = "Hello, world!";
-      byte[] data = Encoding.UTF8.GetBytes(message);
-      
-      stream.Write(data, 0, data.Length);
+listener.Start();
+System.Console.WriteLine("Сервер запущен");
 
-      System.Console.WriteLine("Данные отправлены");
-    }
-  }
-	BlockMatrix z = new(new List<List<double>>() {
-	new() {2, 2, 3, 4},
-	new() {4, 5, 6, 1},
-	new() {2, 3, 4, 5},
-	new() {5, 2, 1, 3},
-});
+while (true) {
+  TcpClient client = listener.AcceptTcpClient();
+  System.Console.WriteLine("Клиент подключен");
+
+  NetworkStream stream = client.GetStream();
+
+  byte[] data = new byte[256];
+  int bytes = stream.Read(data, 0, data.Length);
+  string message = Encoding.UTF8.GetString(data, 0, bytes);
+  Console.WriteLine($"Получено: {message}");
+
+  // Закрытие соединения
+  client.Close();
 }
