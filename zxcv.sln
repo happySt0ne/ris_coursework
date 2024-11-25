@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server", "Server\Server.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MatrixLibrary", "MatrixLibrary\MatrixLibrary.csproj", "{00813194-4FFF-41C2-A281-C3875466656E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TcpLibrary", "TcpLibrary\TcpLibrary.csproj", "{949FEF5C-C4EC-4997-9B15-158E70E22548}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{00813194-4FFF-41C2-A281-C3875466656E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00813194-4FFF-41C2-A281-C3875466656E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00813194-4FFF-41C2-A281-C3875466656E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{949FEF5C-C4EC-4997-9B15-158E70E22548}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{949FEF5C-C4EC-4997-9B15-158E70E22548}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{949FEF5C-C4EC-4997-9B15-158E70E22548}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{949FEF5C-C4EC-4997-9B15-158E70E22548}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
