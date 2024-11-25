@@ -68,4 +68,17 @@ public class BlockMatrix {
 
     return new(result);
   }
+
+  public static BlockMatrix MultiplyWisely(
+      BlockMatrix A, BlockMatrix B,
+      List<(string, int)> ips) {
+    BlockMatrix result = new(new List<List<double>>() {
+      new() {2, 2, 3, 4},
+      new() {4, 5, 6, 1},
+      new() {2, 3, 4, 5},
+      new() {5, 2, 1, 3},
+    });
+
+    return result;
+  }
 }

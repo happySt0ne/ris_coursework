@@ -3,7 +3,7 @@ namespace network;
 using Ip = (string ip, int port);
 
 public class TcpHelper {
-  public static List<Ip> ips { get; } = new();
+  public static List<Ip> Ips { get; } = new();
 
   public static void ReadIps(string path) {
     using (StreamReader reader = new(path)) {
@@ -15,7 +15,7 @@ public class TcpHelper {
         string ip = splittedLine[0];
         string port = splittedLine[1];
 
-        ips.Add((ip, int.Parse(port)));
+        Ips.Add((ip, int.Parse(port)));
       }
     }
   }
