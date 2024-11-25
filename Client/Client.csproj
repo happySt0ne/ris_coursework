@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MatrixLibrary\MatrixLibrary.csproj" />
+    <ProjectReference Include="..\TcpLibrary\TcpLibrary.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
