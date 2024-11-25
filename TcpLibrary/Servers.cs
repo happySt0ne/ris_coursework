@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using Matrices;
+using Newtonsoft.Json;
 
 namespace TcpLibrary;
 
@@ -17,6 +19,8 @@ public class Servers {
     _servers.ForEach(s => s.Start());
   }
 
+  private static readonly object _lockObj = new();
+
   private static void StartServer(string ip, int port) {
     TcpListener server = new(IPAddress.Parse(ip), port);
 
@@ -32,7 +36,12 @@ public class Servers {
       byte[] data = new byte[256];
       int bytes = stream.Read(data, 0, data.Length);
       string message = Encoding.UTF8.GetString(data, 0, bytes);
-      Console.WriteLine($"Получено на {port}: {message}");
+      List<Matrix> list = JsonConvert.DeserializeObject<List<Matrix>>(message);
+
+      Console.WriteLine($"Получено на {port}:");
+      lock(_lockObj) {
+        list.ForEach(m => m.ShowMatrix());
+      }
 
       client.Close();
     }
