@@ -34,15 +34,40 @@ public class Servers {
       NetworkStream stream = client.GetStream();
 
       byte[] data = new byte[256];
+
       int bytes = stream.Read(data, 0, data.Length);
       string message = Encoding.UTF8.GetString(data, 0, bytes);
-      List<Matrix> list = JsonConvert.DeserializeObject<List<Matrix>>(message);
 
-      Console.WriteLine($"Получено на {port}:");
-      lock(_lockObj) {
-        list.ForEach(m => m.ShowMatrix());
+      string[] separetedData = message.Split("||");
+
+      var row = JsonConvert.DeserializeObject<List<Matrix>>(separetedData[0]);
+      var blockMatrix = JsonConvert.DeserializeObject<BlockMatrix>(separetedData[1]);
+
+      if (row is null || blockMatrix is null) {
+        throw new NullReferenceException(
+          "data was not recieved");
       }
 
+      Array.Clear(data, 0, data.Length);
+
+      List<Matrix> result = row * blockMatrix;
+      string responce = JsonConvert.SerializeObject(result);
+      data = Encoding.UTF8.GetBytes(responce);
+
+      lock(_lockObj) {
+        Console.WriteLine($"Получено на {port}:");
+        row?.ForEach(m => m.ShowMatrix());
+
+        System.Console.WriteLine("Matrix:");
+        blockMatrix?.ShowMatrix();
+
+        System.Console.WriteLine("MultiplyingResult:");
+        result.ForEach(m => m.ShowMatrix());
+
+        stream.Write(data, 0, data.Length);
+      }
+
+      stream.Close();
       client.Close();
     }
   }
