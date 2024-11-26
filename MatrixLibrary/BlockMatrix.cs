@@ -54,7 +54,7 @@ public class BlockMatrix {
   public List<Matrix> GetColumn(int colIndex) 
     => MatrixData.Select(row => row[colIndex]).ToList();
 
-  public static BlockMatrix operator *(
+  public static BlockMatrix operator* (
       BlockMatrix A, BlockMatrix B) {
     List<List<Matrix>> result = new(); 
 
@@ -69,6 +69,19 @@ public class BlockMatrix {
     }    
 
     return new(result);
+  }
+
+  public static List<Matrix> operator* (
+      List<Matrix> row, BlockMatrix A) {
+    List<Matrix> result = new();
+
+    for (int i = 0; i < row.Count; ++i) {
+      var column = A.GetColumn(i);
+
+      result.Add(row.MultiplyLists(column));
+    }
+
+    return result;
   }
 
   public static BlockMatrix MultiplyWisely(
