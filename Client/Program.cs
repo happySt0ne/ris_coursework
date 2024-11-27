@@ -26,7 +26,7 @@ public partial class Program {
   private static async Task Main(string[] args) {
     var settings = ServersHelper.ReadServers("../Servers.json");
 
-    CreateTasks(settings);
+    await CreateTasks(settings);
     await Task.WhenAll(_tasks);
 
     System.Console.WriteLine("Result of multiplying:");
@@ -36,13 +36,13 @@ public partial class Program {
     result.ShowMatrix();
   }
 
-  private static void CreateTasks(ServerSettings settings) {
+  private static async Task CreateTasks(ServerSettings settings) {
     foreach (var server in settings.Servers) {
-      using (TcpClient client = new(server.Ip, server.Port)) {
-        Console.WriteLine($"подключено к серверу {server.Ip}:{server.Port}");
+      TcpClient client = new();
+      await client.ConnectAsync(server.Ip, server.Port);
+      Console.WriteLine($"подключено к серверу {server.Ip}:{server.Port}");
 
-        _tasks.Add(PushData(client));
-      }
+      _tasks.Add(PushData(client));
     }
   }
 
@@ -56,19 +56,20 @@ public partial class Program {
 
     string jsonResult = $"{rowJson}||{matrixJson}";
 
-    byte[] dataBytes = Encoding.UTF8.GetBytes(jsonResult);
+    byte[] dataBytes = new byte[256];
+    dataBytes = Encoding.UTF8.GetBytes(jsonResult);
     
     System.Console.WriteLine("Данные отправлены");
     await stream.WriteAsync(dataBytes, 0, dataBytes.Length);
 
-    Array.Clear(dataBytes, 0, dataBytes.Length);
-
-    stream.Read(dataBytes, 0, dataBytes.Length); // Вот здесь нужно ебнуть Asynс чтобы нормально было
+    var responceByte = new byte[256]; 
+    await stream.ReadAsync(responceByte, 0, responceByte.Length); 
     string responce = Encoding.UTF8
-      .GetString(dataBytes, 0, dataBytes.Length);
-    var z = JsonConvert.DeserializeObject<List<Matrix>>(responce);
-    if (z is null) throw new NullReferenceException();
+      .GetString(responceByte, 0, responceByte.Length);
+    var result = JsonConvert.DeserializeObject<List<Matrix>>(responce);
+    if (result is null) throw new NullReferenceException();
 
-    return z;
+    client.Close();
+    return result;
   }
 }

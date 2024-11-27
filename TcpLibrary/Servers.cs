@@ -8,6 +8,7 @@ namespace TcpLibrary;
 
 public class Servers {
   private static List<Thread> _servers = new();
+  private static readonly object _lockObj = new();
 
   public static void ConfigureServers(ServerSettings settings) {
     foreach (var server in settings.Servers) {
@@ -18,8 +19,6 @@ public class Servers {
 
     _servers.ForEach(s => s.Start());
   }
-
-  private static readonly object _lockObj = new();
 
   private static void StartServer(string ip, int port) {
     TcpListener server = new(IPAddress.Parse(ip), port);
@@ -49,7 +48,7 @@ public class Servers {
       }
 
       Array.Clear(data, 0, data.Length);
-
+      System.Console.WriteLine($"port {port}");
       List<Matrix> result = row * blockMatrix;
       string responce = JsonConvert.SerializeObject(result);
       data = Encoding.UTF8.GetBytes(responce);
@@ -66,8 +65,7 @@ public class Servers {
 
         stream.Write(data, 0, data.Length);
       }
-
-      stream.Close();
+      
       client.Close();
     }
   }
