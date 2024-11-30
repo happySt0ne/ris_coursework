@@ -44,10 +44,13 @@ public class Servers {
   }
 
   private static DataTransfer ReadData(NetworkStream stream) {
-    byte[] data = new byte[256];
+    byte[] dataLengthBytes = new byte[4];
+    stream.Read(dataLengthBytes, 0, 4);
+    int dataLength = BitConverter.ToInt32(dataLengthBytes);
 
-    int bytes = stream.Read(data, 0, data.Length);
-    string message = Encoding.UTF8.GetString(data, 0, bytes);
+    byte[] data = new byte[dataLength];
+    stream.Read(data, 0, dataLength);
+    string message = Encoding.UTF8.GetString(data, 0, dataLength);
 
     string[] separetedData = message.Split("||");
 
@@ -66,18 +69,18 @@ public class Servers {
 
   private static DataTransfer SendCalculations(
       NetworkStream stream, DataTransfer dataTransfer) {
-    var data = new byte[256];
 
     List<Matrix> result = 
       dataTransfer.Row * dataTransfer.BlockMatrix;
     dataTransfer.Result = result;
 
     string responce = JsonConvert.SerializeObject(result);
-    data = Encoding.UTF8.GetBytes(responce);
+    byte[] data = Encoding.UTF8.GetBytes(responce);
 
-    lock(_writeLock) {
-      stream.Write(data, 0, data.Length);
-    }
+    byte[] dataLengthBytes = BitConverter.GetBytes(data.Length);
+    stream.Write(dataLengthBytes, 0, dataLengthBytes.Length);
+
+    stream.Write(data, 0, data.Length);
 
     return dataTransfer;
   }

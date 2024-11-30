@@ -74,8 +74,13 @@ public static class Client {
 
   private static async Task SendData(
       string jsonToSend, NetworkStream stream) {
-    byte[] dataBytes = new byte[256];
-    dataBytes = Encoding.UTF8.GetBytes(jsonToSend);
+    byte[] dataBytes = Encoding.UTF8.GetBytes(jsonToSend);
+    
+    byte[] dataLengthBytes = BitConverter.GetBytes(dataBytes.Length);
+    await stream.WriteAsync(dataLengthBytes, 0, dataLengthBytes.Length);
+
+    System.Console.WriteLine($"dataBytesLeng: {dataBytes.Length}");
+    System.Console.WriteLine(string.Join("", dataBytes));
     
     System.Console.WriteLine("Данные отправлены");
     await stream.WriteAsync(dataBytes, 0, dataBytes.Length);
@@ -83,11 +88,13 @@ public static class Client {
 
   private static async Task<List<Matrix>> ReadResponce(
       NetworkStream stream) {
-    var responceByte = new byte[256]; 
+    byte[] dataLengthBytes = new byte[4];
+    stream.Read(dataLengthBytes, 0, 4);
+    int dataLength = BitConverter.ToInt32(dataLengthBytes);
 
-    await stream.ReadAsync(responceByte, 0, responceByte.Length); 
-    string responce = Encoding.UTF8
-      .GetString(responceByte, 0, responceByte.Length);
+    var data = new byte[dataLength]; 
+    await stream.ReadAsync(data, 0, data.Length); 
+    string responce = Encoding.UTF8.GetString(data, 0, dataLength);
     
     var result = JsonConvert
       .DeserializeObject<List<Matrix>>(responce);
