@@ -5,52 +5,32 @@ namespace Testing;
 
 using Client = Client.Client;
 
-public class TestData {
-  public List<List<double>> A { get; set; }
-  public List<List<double>> B { get; set; }
-  public List<List<double>> Result { get; set; }
-
-  public TestData(List<List<double>> a, 
-      List<List<double>> b,
-      List<List<double>> result) {
-    A = a;
-    B = b;
-    Result = result;
-  }
-}
-
 [TestClass]
 public class UnitTest1 {
   private string pathToServersIp = "../../../../Servers.json";
 
-  [TestInitialize]
-  public void Initialize() {
-    var settings = ServersHelper.ReadServers(pathToServersIp);
-    Servers.ConfigureServers(settings);
-  }
-
   public static IEnumerable<object[]> GetDataList() {
     var dataList = new List<TestData> {
-      /*new (*/
-      /*  new List<List<double>> {*/
-      /*    new() {2, 2, 3, 4},*/
-      /*    new() {4, 5, 6, 1},*/
-      /*    new() {2, 3, 4, 5},*/
-      /*    new() {5, 2, 1, 3},*/
-      /*  },*/
-      /*  new List<List<double>> {*/
-      /*    new() {7, 8, 2, 3},*/
-      /*    new() {9, 3, 4, 1},*/
-      /*    new() {2, 3, 3, 4},*/
-      /*    new() {5, 1, 2, 6},*/
-      /*  },*/
-      /*  new List<List<double>> {*/
-      /*    new() {58, 35, 29, 44},*/
-      /*    new() {90, 66, 48, 47},*/
-      /*    new() {74, 42, 38, 55},*/
-      /*    new() {70, 52, 27, 39},*/
-      /*  }*/
-      /*),*/
+      new (
+        new List<List<double>> {
+          new() {2, 2, 3, 4},
+          new() {4, 5, 6, 1},
+          new() {2, 3, 4, 5},
+          new() {5, 2, 1, 3},
+        },
+        new List<List<double>> {
+          new() {7, 8, 2, 3},
+          new() {9, 3, 4, 1},
+          new() {2, 3, 3, 4},
+          new() {5, 1, 2, 6},
+        },
+        new List<List<double>> {
+          new() {58, 35, 29, 44},
+          new() {90, 66, 48, 47},
+          new() {74, 42, 38, 55},
+          new() {70, 52, 27, 39},
+        }
+      ),
       new(
         new List<List<double>> {
           new() {2, 2, 3, 4, 4, 5},
@@ -86,14 +66,19 @@ public class UnitTest1 {
   [DynamicData(nameof(GetDataList), DynamicDataSourceType.Method)]
   public async Task TestMethod1(TestData data) {
     var settings = ServersHelper.ReadServers(pathToServersIp);
-    Servers.ConfigureServers(settings);
 
-    Client.SetMatrixA(data.A);
-    Client.SetMatrixB(data.B);
+    Servers servers = new();
+    servers.ConfigureServers(settings);
+    
+    Client client = new();
+
+    client.SetMatrixA(data.A);
+    client.SetMatrixB(data.B);
 
     BlockMatrix answer = new(data.Result);
-    BlockMatrix gettedAns = new(await Client.Start(pathToServersIp));
+    BlockMatrix gettedAns = new(await client.Start(pathToServersIp));
 
     Assert.AreEqual(answer, gettedAns);
+    servers.StopServers();
   }
 }
