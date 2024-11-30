@@ -3,7 +3,6 @@ using System.Text;
 using Matrices;
 using Newtonsoft.Json;
 using TcpLibrary;
-using ListExt;
 
 namespace Client;
 
@@ -25,17 +24,16 @@ public static class Client {
     _serializedB = JsonConvert.SerializeObject(_B);
   }
 
-  public static async Task Start(string pathToServers) {
+  public static async Task<List<List<Matrix>>> Start(string pathToServers) {
     var settings = ServersHelper.ReadServers(pathToServers);
 
     await CreateTasks(settings);
     await Task.WhenAll(_tasks);
 
-    System.Console.WriteLine("Result of multiplying:");
     List<List<Matrix>> result =
       _tasks.Select(t => t.Result).ToList();
 
-    result.ShowMatrix();
+    return result;
   }
 
   private static async Task CreateTasks(ServerSettings settings) {

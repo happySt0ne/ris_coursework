@@ -1,4 +1,7 @@
-﻿namespace main;
+﻿using ListExt;
+using Matrices;
+
+namespace main;
 
 using Client = Client.Client;
 
@@ -21,6 +24,13 @@ public class Program {
       })
     );
 
-    await Client.Start("../Servers.json");
+    var a = await Client.Start("../Servers.json");
+    BlockMatrix b = new(a);
+    var s = b.MatrixData.SelectMany(d => d.SelectMany(z => z.MatrixData.SelectMany(s => s))).ToList();
+
+    System.Console.WriteLine("ass");
+    s.ForEach(i => Console.Write($"{i} "));
+
+    /*a.ShowMatrix();*/
   }
 }
