@@ -57,16 +57,6 @@ public  class Client {
       serverQueue++;
       serverQueue %= settings.Servers.Count;
     }
-
-    /*foreach (var server in settings.Servers) {*/
-    /*  TcpClient client = new();*/
-    /**/
-    /*  await client.ConnectAsync(server.Ip, server.Port);*/
-    /*  Console.WriteLine(*/
-    /*    $"подключено к серверу {server.Ip}:{server.Port}");*/
-    /**/
-    /*  _tasks.Add(PushData(client));*/
-    /*}*/
   }
 
   private  async Task<List<Matrix>> PushData(TcpClient client) {
