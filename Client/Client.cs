@@ -7,25 +7,25 @@ using TcpLibrary;
 
 namespace Client;
 
-public static class Client { 
-  private static List<Task<List<Matrix>>> _tasks = new();
+public  class Client { 
+  private  List<Task<List<Matrix>>> _tasks = new();
 
-	private static BlockMatrix? _A;
-  private static BlockMatrix? _B;
+	private  BlockMatrix? _A;
+  private  BlockMatrix? _B;
     
-  private static int _rowNumber = 0;
-  private static string? _serializedB;
+  private  int _rowNumber = 0;
+  private  string? _serializedB;
 
-  public static void SetMatrixA(List<List<double>> a) {
+  public  void SetMatrixA(List<List<double>> a) {
     _A = new(a);
   }
 
-  public static void SetMatrixB(List<List<double>> b) {
+  public  void SetMatrixB(List<List<double>> b) {
     _B = new(b);
     _serializedB = JsonConvert.SerializeObject(_B);
   }
 
-  public static async Task<List<List<Matrix>>> Start(string pathToServers) {
+  public  async Task<List<List<Matrix>>> Start(string pathToServers) {
     var settings = ServersHelper.ReadServers(pathToServers);
 
     await CreateTasks(settings);
@@ -37,7 +37,7 @@ public static class Client {
     return result;
   }
 
-  private static async Task CreateTasks(ServerSettings settings) {
+  private  async Task CreateTasks(ServerSettings settings) {
     if (_A is null) {
       throw new NullReferenceException("A matrix is null!");
     }
@@ -69,7 +69,7 @@ public static class Client {
     /*}*/
   }
 
-  private static async Task<List<Matrix>> PushData(TcpClient client) {
+  private  async Task<List<Matrix>> PushData(TcpClient client) {
     NetworkStream stream = client.GetStream();
 
     string jsonToSend = PrepareData();
@@ -80,7 +80,7 @@ public static class Client {
     return result;
   }
 
-  private static string PrepareData() {
+  private  string PrepareData() {
     if (_A is null) 
       throw new NullReferenceException("matrix A is null");
     if (_B is null)
@@ -93,7 +93,7 @@ public static class Client {
     return jsonToSend;
   }
 
-  private static async Task SendData(string jsonToSend,
+  private  async Task SendData(string jsonToSend,
                                      NetworkStream stream) {
     byte[] dataBytes = Encoding.UTF8.GetBytes(jsonToSend);
     
@@ -104,7 +104,7 @@ public static class Client {
     await stream.WriteAsync(dataBytes, 0, dataBytes.Length);
   }
 
-  private static async Task<List<Matrix>> ReadResponce(
+  private  async Task<List<Matrix>> ReadResponce(
       NetworkStream stream) {
     byte[] dataLengthBytes = new byte[4];
     stream.Read(dataLengthBytes, 0, 4);

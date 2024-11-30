@@ -6,7 +6,7 @@ namespace main;
 using Client = Client.Client;
 
 public class Program {
-  private static async Task Main(string[] args) {
+  private async static Task Main(string[] args) {
     /*Client.SetMatrixA(*/
     /*  new(new List<List<double>>() {*/
     /*    new() {2, 2, 3, 4},*/
@@ -23,8 +23,9 @@ public class Program {
     /*    new() {5, 1, 2, 6},*/
     /*  })*/
     /*);*/
+    Client client = new();
 
-    Client.SetMatrixA(
+    client.SetMatrixA(
       new List<List<double>> {
         new() {2, 2, 3, 4, 4, 5},
         new() {4, 5, 6, 1, 2, 3},
@@ -35,7 +36,7 @@ public class Program {
       }
     );
 
-    Client.SetMatrixB(
+    client.SetMatrixB(
       new List<List<double>> {
         new() {7, 8, 2, 2, 4, 8},
         new() {9, 3, 4, 6, 7, 8},
@@ -46,7 +47,7 @@ public class Program {
       }
     );
 
-    var a = await Client.Start("../Servers.json");
+    var a = await client.Start("../Servers.json");
 
     a.ShowMatrix();
   }
