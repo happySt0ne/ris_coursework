@@ -124,4 +124,6 @@ public class BlockMatrix {
 
     return result;
   }
+
+  public override int GetHashCode() => base.GetHashCode();
 }
