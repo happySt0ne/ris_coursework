@@ -1,41 +1,38 @@
-﻿using System.Net.Sockets;
-using System.Text;
+﻿using ListExt;
 using Matrices;
-using TcpLibrary;
 
-public partial class Program {
-  private static List<Task> _tasks = new();
+namespace main;
 
-  private static async Task Main(string[] args) {
-    var settings = ServersHelper.ReadServers("../Servers.json");
+using Client = Client.Client;
 
-    foreach (var server in settings.Servers) {
-      using (TcpClient client = new(server.Ip, server.Port)) {
-        Console.WriteLine($"подключено к серверу {server.Ip}:{server.Port}");
+public class Program {
+  private async static Task Main(string[] args) {
+    Client client = new();
 
-        _tasks.Add(PushData(client));
+    client.SetMatrixA(
+      new List<List<double>> {
+        new() {2, 2, 3, 4, 4, 5},
+        new() {4, 5, 6, 1, 2, 3},
+        new() {2, 3, 4, 7, 2, 8},
+        new() {1, 2, 4, 4, 8, 9},
+        new() {6, 8, 8, 9, 2, 1},
+        new() {6, 7, 9, 0, 1, 3},
       }
-    }
+    );
 
-    await Task.WhenAll(_tasks);
-    System.Console.WriteLine("all tasks completed");
+    client.SetMatrixB(
+      new List<List<double>> {
+        new() {7, 8, 2, 2, 4, 8},
+        new() {9, 3, 4, 6, 7, 8},
+        new() {2, 3, 3, 5, 4, 1},
+        new() {1, 6, 4, 2, 3, 7},
+        new() {5, 9, 1, 5, 4, 6},
+        new() {4, 2, 8, 3, 4, 1},
+      }
+    );
+
+    var a = await client.Start("../Servers.json");
+
+    a.ShowMatrix();
   }
-
-  private static async Task PushData(TcpClient client) {
-      NetworkStream stream = client.GetStream();
-
-      string message = "Hello, world!";
-      byte[] data = Encoding.UTF8.GetBytes(message);
-      
-      stream.Write(data, 0, data.Length);
-
-      System.Console.WriteLine("Данные отправлены");
-  }
-
-	BlockMatrix z = new(new List<List<double>>() {
-    new() {2, 2, 3, 4},
-    new() {4, 5, 6, 1},
-    new() {2, 3, 4, 5},
-    new() {5, 2, 1, 3},
-  });
 }
