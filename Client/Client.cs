@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Text;
 using Matrices;
@@ -37,15 +38,35 @@ public static class Client {
   }
 
   private static async Task CreateTasks(ServerSettings settings) {
-    foreach (var server in settings.Servers) {
+    if (_A is null) {
+      throw new NullReferenceException("A matrix is null!");
+    }
+
+    int serverQueue = 0;
+
+    while (_rowNumber != _A.MatrixData.Count) {
       TcpClient client = new();
 
-      await client.ConnectAsync(server.Ip, server.Port);
-      Console.WriteLine(
-        $"подключено к серверу {server.Ip}:{server.Port}");
-
+      await client.ConnectAsync(settings.Servers[serverQueue].Ip,
+                                settings.Servers[serverQueue].Port);
+      Console.WriteLine($"подключено к серверу" +
+                        $"{settings.Servers[serverQueue].Ip}" +
+                        $":{settings.Servers[serverQueue].Port}");
+      
       _tasks.Add(PushData(client));
+      serverQueue++;
+      serverQueue %= settings.Servers.Count;
     }
+
+    /*foreach (var server in settings.Servers) {*/
+    /*  TcpClient client = new();*/
+    /**/
+    /*  await client.ConnectAsync(server.Ip, server.Port);*/
+    /*  Console.WriteLine(*/
+    /*    $"подключено к серверу {server.Ip}:{server.Port}");*/
+    /**/
+    /*  _tasks.Add(PushData(client));*/
+    /*}*/
   }
 
   private static async Task<List<Matrix>> PushData(TcpClient client) {
@@ -72,16 +93,13 @@ public static class Client {
     return jsonToSend;
   }
 
-  private static async Task SendData(
-      string jsonToSend, NetworkStream stream) {
+  private static async Task SendData(string jsonToSend,
+                                     NetworkStream stream) {
     byte[] dataBytes = Encoding.UTF8.GetBytes(jsonToSend);
     
     byte[] dataLengthBytes = BitConverter.GetBytes(dataBytes.Length);
     await stream.WriteAsync(dataLengthBytes, 0, dataLengthBytes.Length);
 
-    System.Console.WriteLine($"dataBytesLeng: {dataBytes.Length}");
-    System.Console.WriteLine(string.Join("", dataBytes));
-    
     System.Console.WriteLine("Данные отправлены");
     await stream.WriteAsync(dataBytes, 0, dataBytes.Length);
   }
