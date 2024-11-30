@@ -22,8 +22,10 @@ public class BlockMatrix {
       }
     }
 
-    for (int i = 0; i < matrices.Count; i += 2) {
-      MatrixData.Add(matrices[i..(i+2)]);
+    var newMatrixLenght = matrix.Count / 2;
+
+    for (int i = 0; i < matrices.Count; i += newMatrixLenght) {
+      MatrixData.Add(matrices[i..(i + newMatrixLenght)]);
     }
   }
 
