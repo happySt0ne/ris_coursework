@@ -96,4 +96,30 @@ public class BlockMatrix {
 
     return result;
   }
+
+  public override bool Equals(object? obj) {
+    if (obj is null || GetType() != obj.GetType()) {
+      return false;
+    }
+    
+    BlockMatrix other = (BlockMatrix)obj;
+
+    if (MatrixData.Count != other.MatrixData.Count) {
+      return false;
+    }
+
+    var valueListA = MatrixData.SelectMany(d =>
+      d.SelectMany(z => z.MatrixData.SelectMany(s => s))).ToList();
+
+    var valueListB = other.MatrixData.SelectMany(d =>
+      d.SelectMany(z => z.MatrixData.SelectMany(s => s))).ToList();
+
+    bool result = true;
+
+    for (int i = 0; i < valueListA.Count; ++i) {
+      result &= (valueListA[i] == valueListB[i]); 
+    }
+
+    return result;
+  }
 }
