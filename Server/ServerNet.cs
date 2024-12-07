@@ -10,6 +10,7 @@ public partial class Server : IDisposable {
   private TcpListener _listener;
   private CancellationTokenSource _tokenSource = new();
   private ServerInfo? _address;
+  private string? _pathToAddressesFile;
 
   public ServerInfo Address { 
     get {
@@ -28,21 +29,8 @@ public partial class Server : IDisposable {
     StartThreads();
   }
 
-  /*public Server(string pathToFile) {*/
-  /*  System.Console.WriteLine(pathToFile);*/
-  /**/
-  /*  var settings = ServersHelper.ReadServers(pathToFile);*/
-  /*  _address = ServersHelper.FirstFreeAddress(settings); */
-  /**/
-  /*  _listener = ServersHelper.StartListener(_address);*/
-  /**/
-  /*  System.Console.WriteLine($"Server started at: {_address}");*/
-  /**/
-  /*  StartThreads();*/
-  /*}*/
-
-  public Server(string pathToFile) {
-    var Address = ServersHelper.GetMyAddress();
+  public Server() {
+    Address = ServersHelper.GetMyAddress();
     var (port, ip) = Address;
 
     _listener = new(ip, port);
@@ -50,12 +38,16 @@ public partial class Server : IDisposable {
 
     System.Console.WriteLine($"server started at: {Address}");
 
+    StartThreads();
+  }
+
+  public Server(string pathToFile) : this() {
+    _pathToAddressesFile = pathToFile;
+
     var settings = ServersHelper.ReadServers(pathToFile);
     settings.Add(Address);
 
     ServersHelper.WriteSettings(pathToFile, settings);
-
-    StartThreads();
   }
 
   ~Server() {
@@ -75,7 +67,11 @@ public partial class Server : IDisposable {
       _B = null;
       _tokenSource.Cancel();
     }
-    
+
+    if (_pathToAddressesFile is not null) {
+      ServersHelper.DeleteAddress(Address, _pathToAddressesFile);
+    }
+
     _listener?.Dispose();
     _disposed = true;
   }

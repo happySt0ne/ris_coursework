@@ -16,8 +16,8 @@ internal class Program {
           path = o.PathToFile;
       });
     
-    if (path is not null) {
-      Server server = new(path);
-    }
+    Server server = (path is not null) ? new(path) : new();
+
+    server.Dispose();
   } 
 }
