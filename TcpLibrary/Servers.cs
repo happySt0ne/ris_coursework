@@ -80,7 +80,6 @@ public class Servers {
 
   private DataTransfer SendCalculations(
       NetworkStream stream, DataTransfer dataTransfer) {
-
     List<Matrix> result = 
       dataTransfer.Row * dataTransfer.BlockMatrix;
     dataTransfer.Result = result;
@@ -97,8 +96,8 @@ public class Servers {
   }
 
   private void PrintLog(NetworkStream stream,
-                               DataTransfer dataTransfer,
-                               string netPath) {
+                        DataTransfer dataTransfer,
+                        string netPath) {
     lock(_logLock) {
       Console.WriteLine($"Получено на {netPath}:");
       dataTransfer.Row?.ForEach(m => m.ShowMatrix());
