@@ -28,5 +28,15 @@ public class ServerInfo {
     port = Port;
     address = IPAddress.Parse(Ip);
   }
+
+  public override bool Equals(object? obj) {
+    if (obj is ServerInfo info) {
+      return info.Ip == this.Ip && info.Port == this.Port;
+    }
+
+    return false;
+  }
+
+  public override int GetHashCode() => base.GetHashCode(); 
 }
 

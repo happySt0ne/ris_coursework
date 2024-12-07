@@ -36,7 +36,10 @@ public class ServersHelper {
   }
 
   public static void DeleteAddress(ServerInfo info, string pathToFile) {
-
+    ServerSettings settings = ReadServers(pathToFile); 
+    settings.Servers.Remove(info);
+    
+    WriteSettings(pathToFile, settings);
   }
 
   public static bool IsPortInUse(int port) {
