@@ -7,6 +7,24 @@ public class BlockMatrix {
 
   public BlockMatrix() => MatrixData = new();
 
+  public BlockMatrix(List<double> vector) {
+    List<Matrix> matrices = new();
+    MatrixData = new();
+
+    for (int i = 0; i < vector.Count; i += 2) {
+      List<List<double>> z = new();
+
+      z.Add(new() {vector[i]});
+      z.Add(new() {vector[i+1]});
+
+      matrices.Add(new(z));
+    }
+
+    for (int i = 0; i < matrices.Count; i++ ) {
+      MatrixData.Add(new() {matrices[i]});
+    }
+  }
+
   public BlockMatrix(List<List<double>> matrix) {
     List<Matrix> matrices = new();
     MatrixData = new();
@@ -63,7 +81,7 @@ public class BlockMatrix {
     for (int i = 0; i < A.MatrixData.Count; ++i) {
       List<Matrix> row = new();
 
-      for (int j = 0; j < A.MatrixData[0].Count; ++j) {
+      for (int j = 0; j < B.MatrixData[0].Count; ++j) {
         row.Add(A.GetRow(i).MultiplyLists(B.GetColumn(j)));
       }
 
@@ -77,24 +95,11 @@ public class BlockMatrix {
       List<Matrix> row, BlockMatrix A) {
     List<Matrix> result = new();
 
-    for (int i = 0; i < row.Count; ++i) {
+    for (int i = 0; i < A.MatrixData[0].Count; ++i) {
       var column = A.GetColumn(i);
 
       result.Add(row.MultiplyLists(column));
     }
-
-    return result;
-  }
-
-  public static BlockMatrix MultiplyWisely(
-      BlockMatrix A, BlockMatrix B,
-      List<(string, int)> ips) {
-    BlockMatrix result = new(new List<List<double>>() {
-      new() {2, 2, 3, 4},
-      new() {4, 5, 6, 1},
-      new() {2, 3, 4, 5},
-      new() {5, 2, 1, 3},
-    });
 
     return result;
   }

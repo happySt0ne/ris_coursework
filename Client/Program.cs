@@ -11,28 +11,21 @@ public class Program {
 
     client.SetMatrixA(
       new List<List<double>> {
-        new() {2, 2, 3, 4, 4, 5},
-        new() {4, 5, 6, 1, 2, 3},
-        new() {2, 3, 4, 7, 2, 8},
-        new() {1, 2, 4, 4, 8, 9},
-        new() {6, 8, 8, 9, 2, 1},
-        new() {6, 7, 9, 0, 1, 3},
+        new() {1, -1, 3, 1},
+        new() {4, -1, 5, 4},
+        new() {2, -2, 4, 1},
+        new() {1, -4, 5, -1},
       }
     );
 
-    client.SetMatrixB(
-      new List<List<double>> {
-        new() {7, 8, 2, 2, 4, 8},
-        new() {9, 3, 4, 6, 7, 8},
-        new() {2, 3, 3, 5, 4, 1},
-        new() {1, 6, 4, 2, 3, 7},
-        new() {5, 9, 1, 5, 4, 6},
-        new() {4, 2, 8, 3, 4, 1},
-      }
-    );
+    List<double> ass = new() {5, 4, 6, 3};
+    BlockMatrix x = new(ass);
+
+    client.SetMatrixB(ass);
 
     var a = await client.Start("../Servers.json");
-
+    
+    System.Console.WriteLine("multiplying result");
     a.ShowMatrix();
   }
 }

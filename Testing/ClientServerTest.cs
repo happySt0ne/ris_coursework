@@ -66,7 +66,12 @@ public class UnitTest1 {
   [DataTestMethod]
   [DynamicData(nameof(GetDataList), DynamicDataSourceType.Method)]
   public async Task TestMethod1(TestData data) {
-    Server server = new(pathToServersIp);
+    List<Server> servers = new();
+    for (int i = 0; i < 3; ++i) {
+      servers.Add(new(pathToServersIp));
+    }
+    servers.ForEach(s => s.Start());
+
     Client client = new();
 
     client.SetMatrixA(data.A);
@@ -76,6 +81,6 @@ public class UnitTest1 {
     BlockMatrix gettedAns = new(await client.Start(pathToServersIp));
 
     Assert.AreEqual(answer, gettedAns);
-    server.Dispose();
+    servers.ForEach(s => s.Dispose());
   }
 }

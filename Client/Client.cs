@@ -25,6 +25,11 @@ public  class Client {
     _serializedB = JsonConvert.SerializeObject(_B);
   }
 
+  public void SetMatrixB(List<double> b) {
+    _B = new(b);
+    _serializedB = JsonConvert.SerializeObject(_B);
+  }
+
   public  async Task<List<List<Matrix>>> Start(string pathToServers) {
     var settings = ServersHelper.ReadServers(pathToServers);
 
