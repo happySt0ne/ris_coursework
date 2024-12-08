@@ -7,11 +7,12 @@ internal class Program {
 
   private static void Main(string[] args) {
     string path = GetPath(args);
+    Server server = (path is not null) ? new(path) : new();
 
     Thread input = new(Input);
     input.Start();
 
-    Server server = (path is not null) ? new(path) : new();
+    server.Start();
 
     Console.CancelKeyPress += (_, _) => server.Dispose();
 

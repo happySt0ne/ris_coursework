@@ -26,11 +26,6 @@ public partial class Server : IDisposable {
     var (port, ip) = Address;
 
     _listener = new(ip, port);
-    _listener.Start();
-
-    System.Console.WriteLine($"server started at: {Address}");
-
-    StartThreads();
   }
 
   public Server(string pathToFile) : this() {
@@ -40,6 +35,14 @@ public partial class Server : IDisposable {
     settings.Add(Address);
 
     ServersHelper.WriteSettings(pathToFile, settings);
+  }
+  
+  public void Start() {
+    _listener.Start();
+
+    System.Console.WriteLine($"server started at: {Address}");
+
+    StartThreads();
   }
 
   ~Server() {
