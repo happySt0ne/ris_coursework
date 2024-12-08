@@ -1,26 +1,44 @@
-﻿using Servers;
-using CommandLine;
+﻿using CommandLine;
 
-internal class Options {
-  [Option('p', "path",
-    HelpText = "Path to file with servers addresses")]
-  public string PathToFile { get; init; } = null!; 
-}
+namespace Servers.Program;
 
 internal class Program {
-  private static void Main(string[] args) {
-    string path = string.Empty;
+  private static bool _isRunning = true;
 
-    Parser.Default.ParseArguments<Options>(args)
-      .WithParsed(o => path = o.PathToFile);
+  private static void Main(string[] args) {
+    string path = GetPath(args);
+
+    Thread input = new(Input);
+    input.Start();
 
     Server server = (path is not null) ? new(path) : new();
 
-    Console.CancelKeyPress += (sender, e) => {
-      server.Dispose();
-      Console.WriteLine("The program finished correctly.");
-    };
+    Console.CancelKeyPress += (_, _) => server.Dispose();
 
-    while (true);
+    while (_isRunning);
+
+    input.Join();
+    server.Dispose();
   } 
+
+  private static string GetPath(string[] args) {
+    string result = string.Empty;
+
+    Parser.Default.ParseArguments<Options>(args)
+      .WithParsed(o => result = o.PathToFile);
+
+    return result;
+  }
+
+  private static void Input() {
+    Console.WriteLine("Press 'q' to exit.");
+
+    while (_isRunning) {
+      ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+
+      if (keyInfo.Key == ConsoleKey.Q) {
+        _isRunning = false;
+      }
+    }
+  }
 }

@@ -54,17 +54,15 @@ public partial class Server : IDisposable {
   protected virtual void Dispose(bool disposing) {
     if (_disposed) return;
     if (disposing) {
+      _tokenSource.Cancel();
       _threads.JoinAll();
       _threads = null!;
       _B = null;
-      _tokenSource.Cancel();
     }
 
     if (_pathToAddressesFile is not null) {
       ServersHelper.DeleteAddress(Address, _pathToAddressesFile);
     }
-
-    System.Console.WriteLine("dispose invoked");
 
     _listener?.Dispose();
     _disposed = true;

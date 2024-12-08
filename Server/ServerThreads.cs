@@ -10,15 +10,14 @@ namespace Servers;
 
 public partial class Server {
   private Thread[] _threads = null!;
+  private readonly object _logLock = new();
   private ConcurrentQueue<DataTransfer> _data = new();
-  private bool _isServerWorking = false;
   private ConcurrentQueue<DataTransfer> _results = new();
 
+  private NetworkStream? _stream;
   private BlockMatrix? _B;
 
   private void StartThreads() {
-    _isServerWorking = _tokenSource.Token.IsCancellationRequested;
-
     _threads = new Thread[3] {
       new(() => ReadData()),
       new(() => Calculate()),
@@ -29,7 +28,7 @@ public partial class Server {
   }
 
   private void SendData() {
-    while (_isServerWorking) {
+    while (!_tokenSource.Token.IsCancellationRequested) {
       if (_results.TryDequeue(out DataTransfer? dataToSend)) {
         if (_stream is null) throw new NullReferenceException();
         var a = SendCalculations(_stream, dataToSend);
@@ -39,8 +38,6 @@ public partial class Server {
       }
     } 
   }
-
-  private readonly object _logLock = new();
 
   private void PrintLog(NetworkStream stream,
                         DataTransfer dataTransfer,
@@ -58,24 +55,19 @@ public partial class Server {
   }
 
   private void Calculate() {
-    // Здесь было бы кул короче если бы поток, 
-    // который будет исполнять эту штуку сразу же выкидывал результат в основной поток,
-    // а также нужно сделать так, тчобы основной поток мог всегда закидывать сюда данные. 
-
-    while (_isServerWorking) {
+    while (!_tokenSource.Token.IsCancellationRequested) {
       if (_data.TryDequeue(out DataTransfer? data)) {
         data.Result = data.Row * data.BlockMatrix;
+
         _results.Enqueue(data);
       }
     }
   }
-
-  private NetworkStream? _stream;
   
   private void ReadData() {
-    while (_isServerWorking) {
-      TcpClient client = null!;
+    TcpClient client = null!;
 
+    while (!_tokenSource.Token.IsCancellationRequested) {
       if (_listener.Pending()) {
         client = _listener.AcceptTcpClient();
       } else {
