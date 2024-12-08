@@ -57,10 +57,16 @@ public class Matrix {
   public static Matrix operator *(Matrix A, Matrix B ) {
     List<List<double>> result = new();
 
+    System.Console.WriteLine("a:");
+    A.ShowMatrix();
+
+    System.Console.WriteLine("b:");
+    B.ShowMatrix();
+
     for (int i = 0; i < A.MatrixData.Count; ++i) {
       List<double> row = new();
 
-      for (int j = 0; j < A.MatrixData[0].Count; ++j) {
+      for (int j = 0; j < B.MatrixData[0].Count; ++j) {
         row.Add(A.GetRow(i).MultiplyLists(B.GetColumn(j)));
       }
 
@@ -84,5 +90,28 @@ public class Matrix {
     }
 
     return new(result);
+  }
+
+  public override int GetHashCode() => base.GetHashCode();
+
+  public override bool Equals(object? obj) {
+    if (obj is null) return false;
+    if (obj is not Matrix) return false;
+
+    var mtr = obj as Matrix;
+    if (mtr is null) return false;
+
+    if (mtr.MatrixData.Count != MatrixData.Count) return false;
+    
+    List<double> flatMtr = mtr.MatrixData
+      .SelectMany(list => list).ToList();
+    List<double> flat = MatrixData
+      .SelectMany(list => list).ToList();
+
+    for (int i = 0; i < flat.Count; ++i) {
+      if (flatMtr[i] != flat[i]) return false;
+    } 
+
+    return true;
   }
 }
