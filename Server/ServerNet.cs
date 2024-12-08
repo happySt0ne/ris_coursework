@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Sockets;
 using TcpLibrary;
 using ThreadArrExtension;
@@ -20,13 +19,6 @@ public partial class Server : IDisposable {
     private init {
       _address = value;
     }
-  }
-
-  public Server(ServerInfo info) {
-    var (port, ip) = info;
-    _listener = new(ip, port);
-    
-    StartThreads();
   }
 
   public Server() {
@@ -71,6 +63,8 @@ public partial class Server : IDisposable {
     if (_pathToAddressesFile is not null) {
       ServersHelper.DeleteAddress(Address, _pathToAddressesFile);
     }
+
+    System.Console.WriteLine("dispose invoked");
 
     _listener?.Dispose();
     _disposed = true;
