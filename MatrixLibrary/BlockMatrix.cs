@@ -2,10 +2,36 @@ using ListExt;
 
 namespace Matrices;
 
+using Numerics = MathNet.Numerics.LinearAlgebra;
+
 public class BlockMatrix {
   public List<List<Matrix>> MatrixData { get; }
 
+  public int Rows { get => MatrixData.Count; }
+  public int Cols { get => MatrixData[0].Count; }
+
   public BlockMatrix() => MatrixData = new();
+
+  public Matrix this[int i, int j] {
+    get {
+      return MatrixData[i][j];
+    }
+  }
+
+  public BlockMatrix(int rows, int? cols = null!) {
+    cols ??= rows;
+    MatrixData = new();
+
+    for (int i = 0; i < rows; ++i) {
+      List<Matrix> row = new();
+
+      for (int j = 0; j < cols; ++j) {
+        row.Add(new(2, (cols == 1) ? 1 : 2));
+      }
+
+      MatrixData.Add(row);
+    }
+  }
 
   public BlockMatrix(List<double> vector) {
     List<Matrix> matrices = new();
@@ -22,6 +48,19 @@ public class BlockMatrix {
 
     for (int i = 0; i < matrices.Count; i++ ) {
       MatrixData.Add(new() {matrices[i]});
+    }
+  }
+
+  public BlockMatrix(in List<Matrix> vector) {
+    MatrixData = new();
+    List<Matrix> matrices = new();
+
+    /*for (int i = 0; i < vector.Count; i += 2) {*/
+    /*  matrices.Add(); */
+    /*}*/
+
+    for (int i = 0; i < vector.Count; i++) {
+      MatrixData.Add(new() {vector[i]});
     }
   }
 
@@ -51,6 +90,10 @@ public class BlockMatrix {
     MatrixData = matrix;
   }
 
+  public void Exact(int col) {
+   // TODO: приплыли... 
+  }
+
   public void ShowMatrix() {
     for (int i = 0; i < MatrixData.Count; ++i) {
       List<double> row = new();
@@ -73,6 +116,23 @@ public class BlockMatrix {
   
   public List<Matrix> GetColumn(int colIndex) 
     => MatrixData.Select(row => row[colIndex]).ToList();
+
+  public static BlockMatrix operator- (BlockMatrix a,
+                                       BlockMatrix b) {
+    BlockMatrix result = new();
+    
+    for (int i = 0; i < a.MatrixData.Count; ++i) {
+      List<Matrix> row = new();
+
+      for (int j = 0; j < a.MatrixData[0].Count; ++j) {
+        row.Add(a[i, j] - b[i, j]);
+      }
+
+      result.MatrixData.Add(row);
+    }
+
+    return result;
+  }
 
   public static BlockMatrix operator* (
       BlockMatrix A, BlockMatrix B) {
@@ -128,6 +188,25 @@ public class BlockMatrix {
     }
 
     return result;
+  }
+
+  public static BlockMatrix operator+ (in BlockMatrix first, in BlockMatrix second) {
+    if (first.Rows != second.Rows || first.Cols != second.Cols) {
+      throw new Exception("Матрицы неодинакового размера при сложении");
+    }
+
+    List<List<Matrix>> result = new();
+
+    for (int i = 0; i < first.Rows; ++i) {
+      List<Matrix> row = new();
+
+      for (int j = 0; j < first.Cols; ++j) {
+        row.Add(first[i, j] + second[i, j]);     
+      }
+      result.Add(row);
+    }
+
+    return new(result);
   }
 
   public override int GetHashCode() => base.GetHashCode();
