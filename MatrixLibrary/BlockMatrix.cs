@@ -17,7 +17,7 @@ public class BlockMatrix {
       return MatrixData[i][j];
     }
   }
-
+  
   public BlockMatrix(int rows, int? cols = null!) {
     cols ??= rows;
     MatrixData = new();
@@ -85,13 +85,45 @@ public class BlockMatrix {
       MatrixData.Add(matrices[i..(i + newMatrixLenght)]);
     }
   }
+  
+  public BlockMatrix(double[,] arr) {
+    List<Matrix> matrices = new();
+    MatrixData = new();
+
+    System.Console.WriteLine($"size: {arr.GetLength(0)}, {arr.GetLength(1)}");
+
+    for (int i = 0; i < arr.GetLength(0); i += 2) {
+      for (int j = 0; j < arr.GetLength(1); j += 2) {
+        List<List<double>> z = new();
+        
+        if (arr.GetLength(1) > 1) { 
+          z.Add(new List<double> {arr[i, j], arr[i, j+1]});
+          z.Add(new List<double> {arr[i+1, j], arr[i+1, j+1]});
+        } else {
+          z.Add(new List<double> {arr[i, j]});
+          z.Add(new List<double> {arr[i+1, j]});
+        }
+
+        matrices.Add(new(z));
+      }
+    }
+
+    var newMatrixLenght = arr.GetLength(0) / 2;
+    newMatrixLenght = (newMatrixLenght == 0) ? 1 : newMatrixLenght;
+    
+    if (arr.GetLength(1) < 2) {
+      for (int i = 0; i < matrices.Count; ++i) {
+        MatrixData.Add(new() {matrices[i]});
+      }
+    } else {
+      for (int i = 0; i < matrices.Count; i += newMatrixLenght) {
+        MatrixData.Add(matrices[i..(i + newMatrixLenght)]);
+      }
+    }
+  }
 
   public BlockMatrix(List<List<Matrix>> matrix) {
     MatrixData = matrix;
-  }
-
-  public void Exact(int col) {
-   // TODO: приплыли... 
   }
 
   public void ShowMatrix() {

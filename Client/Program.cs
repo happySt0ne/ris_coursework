@@ -1,5 +1,6 @@
-﻿using ListExt;
-using Matrices;
+﻿using Client.Extensions;
+using Client.Support;
+using ListExt;
 
 namespace main;
 
@@ -8,25 +9,23 @@ using Numerics = MathNet.Numerics.LinearAlgebra;
 
 public class Program {
   private async static Task Main(string[] args) {
+    var (s, s2, path) = Input.GetPath(args);
+    double[,] array = Input.GetMatrix(s);
+    double[,] b = Input.GetMatrix(s2);
+
     Client client = new();
-    var asdf = 
-      new List<List<double>> {
-        new() {1, -1, 3, 1},
-        new() {4, -1, 5, 4},
-        new() {2, -2, 4, 1},
-        new() {1, -4, 5, -1},
-      };
 
-    double[,] array = asdf.convertToArr();
-    Numerics.Matrix<double> numMatrix = Numerics.Matrix<double>.Build.DenseOfArray(array);
+    Numerics.Matrix<double> numMatrix =
+      Numerics.Matrix<double>.Build.DenseOfArray(array);
+
     var inversed = numMatrix.Inverse();
-
-    var list = ListExtensions.ConvertMatrixToList(inversed);
+    var list = inversed.ConvertMatrixToList();
 
     client.SetMatrixA(list);
-    client.SetMatrixB(new List<double> {5, 4, 6, 3});
+    client.SetMatrixB(b);
 
-    var result = await client.Start("../Servers.json");
+    var result = await client.Start(path);
     result.ShowMatrix();
   }
 }
+

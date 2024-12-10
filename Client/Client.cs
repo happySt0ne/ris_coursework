@@ -24,6 +24,12 @@ public class Client {
     _serializedB = JsonConvert.SerializeObject(_B);
   }
 
+  public void SetMatrixB(double[,] b) {
+    _B = new(b);
+    _B.ShowMatrix();
+    _serializedB = JsonConvert.SerializeObject(_B);
+  }
+
   public void SetMatrixB(List<double> b) {
     _B = new(b);
     _serializedB = JsonConvert.SerializeObject(_B);

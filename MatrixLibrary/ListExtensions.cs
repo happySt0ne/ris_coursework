@@ -21,25 +21,6 @@ public static class ListExtensions {
     return sum;
   }
 
-  public static List<List<double>> ConvertMatrixToList(Numerics.Matrix<double> matrix)
-{
-    List<List<double>> nestedList = new List<List<double>>();
-
-    for (int i = 0; i < matrix.RowCount; i++)
-    {
-        List<double> row = new List<double>();
-        
-        for (int j = 0; j < matrix.ColumnCount; j++)
-        {
-            row.Add(matrix[i, j]);
-        }
-
-        nestedList.Add(row);
-    }
-
-    return nestedList;
-}
-
   public static double[,] convertToArr(this List<List<double>> list) {
     double[,] result = new double[list.Count, list.Count];
 
