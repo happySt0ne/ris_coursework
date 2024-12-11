@@ -25,6 +25,8 @@ public class Program {
     client.SetMatrixB(b);
 
     var result = await client.Start(path);
+
+    System.Console.WriteLine("\nresult:");
     result.ShowMatrix();
   }
 }

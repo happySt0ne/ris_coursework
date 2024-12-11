@@ -90,8 +90,6 @@ public class BlockMatrix {
     List<Matrix> matrices = new();
     MatrixData = new();
 
-    System.Console.WriteLine($"size: {arr.GetLength(0)}, {arr.GetLength(1)}");
-
     for (int i = 0; i < arr.GetLength(0); i += 2) {
       for (int j = 0; j < arr.GetLength(1); j += 2) {
         List<List<double>> z = new();
