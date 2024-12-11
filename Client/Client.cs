@@ -150,10 +150,20 @@ public class Client {
       NetworkStream stream) {
     byte[] dataLengthBytes = new byte[4];
     stream.Read(dataLengthBytes, 0, 4);
-    int dataLength = BitConverter.ToInt32(dataLengthBytes);
 
+    int dataLength = BitConverter.ToInt32(dataLengthBytes);
+    int totalRecieved = 0;
     var data = new byte[dataLength]; 
-    await stream.ReadAsync(data, 0, data.Length); 
+
+    while (totalRecieved < dataLength) {
+      int recieved =
+        await stream.ReadAsync(data, totalRecieved, dataLength - totalRecieved); 
+      if (recieved == 0) {
+        throw new Exception("Соединение разорвано!");
+      }
+      totalRecieved += recieved;
+    }
+
     string responce = Encoding.UTF8.GetString(data, 0, dataLength);
     
     var result = JsonConvert

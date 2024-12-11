@@ -114,8 +114,17 @@ public partial class Server {
   }
 
   private string ReadMatrix(int bodyLength) {
+    int totalRecieved = 0;
     byte[] data = new byte[bodyLength];
-    _stream?.Read(data, 0, bodyLength);
+
+    while (totalRecieved < bodyLength) {
+      int recivedData = 
+        _stream!.Read(data, totalRecieved, bodyLength - totalRecieved);
+      if (recivedData == 0) {
+        throw new Exception("Соединение прервано!");
+      }
+      totalRecieved += recivedData;
+    }
 
     string message = Encoding.UTF8.GetString(data, 0, bodyLength);
     return message;
