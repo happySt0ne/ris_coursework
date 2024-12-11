@@ -33,7 +33,7 @@ public class BlockMatrix {
     }
   }
 
-  public BlockMatrix(List<double> vector) {
+  public BlockMatrix(in List<double> vector) {
     List<Matrix> matrices = new();
     MatrixData = new();
 
@@ -64,7 +64,7 @@ public class BlockMatrix {
     }
   }
 
-  public BlockMatrix(List<List<double>> matrix) {
+  public BlockMatrix(in List<List<double>> matrix) {
     List<Matrix> matrices = new();
     MatrixData = new();
 
@@ -86,7 +86,7 @@ public class BlockMatrix {
     }
   }
   
-  public BlockMatrix(double[,] arr) {
+  public BlockMatrix(in double[,] arr) {
     List<Matrix> matrices = new();
     MatrixData = new();
 
