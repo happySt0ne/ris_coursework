@@ -51,15 +51,34 @@ public class ServersHelper {
   }
 
   public static ServerInfo GetMyAddress() {
-    var ipAddress = Dns.GetHostAddresses(Dns.GetHostName()).Where(a => 
-      a.AddressFamily is AddressFamily.InterNetwork).First();
+    /*var ipAddress = Dns.GetHostAddresses(Dns.GetHostName()).Where(a => */
+    /*  a.AddressFamily is AddressFamily.InterNetwork).First();*/
     int port;
+    var ipAddress = GetLocalIpv4();
 
     do {
       port = _random.Next(8000, 9000);
     } while(IsPortInUse(port));
     
     return new(ipAddress.ToString(), port);
+  }
+
+  private static IPAddress GetLocalIpv4() {
+    NetworkInterface[] networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
+      foreach (NetworkInterface networkInterface in networkInterfaces) {
+        if (networkInterface.NetworkInterfaceType == NetworkInterfaceType.Wireless80211 && 
+            networkInterface.OperationalStatus == OperationalStatus.Up) {
+          IPInterfaceProperties adapterProperties = networkInterface.GetIPProperties();
+
+          foreach (UnicastIPAddressInformation ip in adapterProperties.UnicastAddresses) {
+            if (ip.Address.AddressFamily == AddressFamily.InterNetwork) {
+                return ip.Address;
+            }
+          }
+        }
+      }
+    
+    throw new Exception("there is no active netInterface");
   }
 
   public static ServerInfo FirstFreeAddress(ServerSettings settings) {
