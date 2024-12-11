@@ -14,6 +14,8 @@ public partial class Server {
   private ConcurrentQueue<DataTransfer> _data = new();
   private ConcurrentQueue<DataTransfer> _results = new();
 
+  private TcpClient _client; 
+
   private NetworkStream? _stream;
   private BlockMatrix? _B;
 
@@ -56,6 +58,7 @@ public partial class Server {
 
   private void Calculate() {
     while (!_tokenSource.Token.IsCancellationRequested) {
+      /*System.Console.WriteLine(_client?.ReceiveBufferSize);*/
       if (_data.TryDequeue(out DataTransfer? data)) {
         data.Result = data.Row * data.BlockMatrix;
 
@@ -63,24 +66,26 @@ public partial class Server {
       }
     }
   }
-  
-  private void ReadData() {
-    TcpClient client = null!;
 
+  private void ReadData() {
     while (!_tokenSource.Token.IsCancellationRequested) {
-      if (_listener.Pending()) {
-        client = _listener.AcceptTcpClient();
+      if (_client is null && _listener.Pending()) {
+        _client = _listener.AcceptTcpClient();
+        _stream = _client.GetStream();
+        // TODO: тут потом очередь добавь.
+      }  
+
+      if (_client is not null) {
+        var readedData = ReadData(_stream);
+        _data.Enqueue(readedData);
       } else {
         Thread.Sleep(100);
         continue;
       }
 
-      _stream = client.GetStream();
-
-      var readedData = ReadData(_stream);
-      _data.Enqueue(readedData);
     }
   }
+
   private DataTransfer ReadData(NetworkStream stream) {
     byte[] dataLengthBytes = new byte[4];
     stream.Read(dataLengthBytes, 0, 4);

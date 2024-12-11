@@ -51,10 +51,10 @@ public class ServersHelper {
   }
 
   public static ServerInfo GetMyAddress() {
-    /*var ipAddress = Dns.GetHostAddresses(Dns.GetHostName()).Where(a => */
-    /*  a.AddressFamily is AddressFamily.InterNetwork).First();*/
+    var ipAddress = Dns.GetHostAddresses(Dns.GetHostName()).Where(a => 
+      a.AddressFamily is AddressFamily.InterNetwork).First();
     int port;
-    var ipAddress = GetLocalIpv4();
+    /*var ipAddress = GetLocalIpv4();*/
 
     do {
       port = _random.Next(8000, 9000);

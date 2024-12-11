@@ -8,6 +8,8 @@ namespace Client;
 
 public class Client { 
   private List<Task<List<Matrix>>> _tasks = new();
+  private List<TcpClient> _clients = new();
+  private List<NetworkStream> _streams = new();
 
 	private BlockMatrix? _A;
   private BlockMatrix? _B;
@@ -26,7 +28,6 @@ public class Client {
 
   public void SetMatrixB(double[,] b) {
     _B = new(b);
-    _B.ShowMatrix();
     _serializedB = JsonConvert.SerializeObject(_B);
   }
 
@@ -35,10 +36,12 @@ public class Client {
     _serializedB = JsonConvert.SerializeObject(_B);
   }
 
-  public async Task<List<List<Matrix>>> Start(string pathToServers) {
-    var settings = ServersHelper.ReadServers(pathToServers);
+  private ServerSettings? _settings;
 
-    await CreateTasks(settings);
+  public async Task<List<List<Matrix>>> Start(string pathToServers) {
+    _settings = ServersHelper.ReadServers(pathToServers);
+
+    await CreateTasks(_settings);
     await Task.WhenAll(_tasks);
 
     List<List<Matrix>> result =
@@ -54,29 +57,31 @@ public class Client {
 
     int serverQueue = 0;
 
-    while (_rowNumber != _A.MatrixData.Count) {
+    foreach (ServerInfo? server in settings.Servers) {
       TcpClient client = new();
 
-      await client.ConnectAsync(settings.Servers[serverQueue].Ip,
-                                settings.Servers[serverQueue].Port);
+      await client.ConnectAsync(server.Ip, server.Port);
       Console.WriteLine($"подключено к серверу" +
-                        $"{settings.Servers[serverQueue].Ip}" +
-                        $":{settings.Servers[serverQueue].Port}");
-      
-      _tasks.Add(PushData(client));
+                        $"{server.Ip}:{server.Port}");
+
+      NetworkStream stream = client.GetStream();
+
+      _streams.Add(stream);
+      _clients.Add(client);
+    }
+    
+    while (_rowNumber != _A.MatrixData.Count) {
+      _tasks.Add(PushData(serverQueue));
       serverQueue++;
       serverQueue %= settings.Servers.Count;
     }
   }
 
-  private async Task<List<Matrix>> PushData(TcpClient client) {
-    NetworkStream stream = client.GetStream();
-
+  private async Task<List<Matrix>> PushData(int queueIndex) {
     string jsonToSend = PrepareData();
-    await SendData(jsonToSend, stream);
-    var result = await ReadResponce(stream);
+    await SendData(jsonToSend, queueIndex);
+    var result = await ReadResponce(_streams[queueIndex]);
 
-    client.Close();
     return result;
   }
 
@@ -93,14 +98,14 @@ public class Client {
     return jsonToSend;
   }
 
-  private async Task SendData(string jsonToSend,
-                              NetworkStream stream) {
+  private async Task SendData(string jsonToSend, int index) {
+    NetworkStream stream = _streams[index];
     byte[] dataBytes = Encoding.UTF8.GetBytes(jsonToSend);
     
     byte[] dataLengthBytes = BitConverter.GetBytes(dataBytes.Length);
     await stream.WriteAsync(dataLengthBytes, 0, dataLengthBytes.Length);
 
-    System.Console.WriteLine("Данные отправлены");
+    System.Console.WriteLine($"Данные отправлены на сервер {_settings?.Servers[index]}");
     await stream.WriteAsync(dataBytes, 0, dataBytes.Length);
   }
 
