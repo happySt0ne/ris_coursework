@@ -1,4 +1,5 @@
 using Matrices;
+using Servers;
 using TcpLibrary;
 
 namespace Testing;
@@ -65,11 +66,12 @@ public class UnitTest1 {
   [DataTestMethod]
   [DynamicData(nameof(GetDataList), DynamicDataSourceType.Method)]
   public async Task TestMethod1(TestData data) {
-    var settings = ServersHelper.ReadServers(pathToServersIp);
+    List<Server> servers = new();
+    for (int i = 0; i < 3; ++i) {
+      servers.Add(new(pathToServersIp));
+    }
+    servers.ForEach(s => s.Start());
 
-    Servers servers = new();
-    servers.ConfigureServers(settings);
-    
     Client client = new();
 
     client.SetMatrixA(data.A);
@@ -79,6 +81,6 @@ public class UnitTest1 {
     BlockMatrix gettedAns = new(await client.Start(pathToServersIp));
 
     Assert.AreEqual(answer, gettedAns);
-    servers.StopServers();
+    servers.ForEach(s => s.Dispose());
   }
 }

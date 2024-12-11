@@ -1,38 +1,31 @@
-﻿using ListExt;
-using Matrices;
+﻿using Client.Extensions;
+using Client.Support;
+using ListExt;
 
 namespace main;
 
 using Client = Client.Client;
+using Numerics = MathNet.Numerics.LinearAlgebra;
 
 public class Program {
   private async static Task Main(string[] args) {
+    var (s, s2, path) = Input.GetPath(args);
+    double[,] array = Input.GetMatrix(s);
+    double[,] b = Input.GetMatrix(s2);
+
     Client client = new();
 
-    client.SetMatrixA(
-      new List<List<double>> {
-        new() {2, 2, 3, 4, 4, 5},
-        new() {4, 5, 6, 1, 2, 3},
-        new() {2, 3, 4, 7, 2, 8},
-        new() {1, 2, 4, 4, 8, 9},
-        new() {6, 8, 8, 9, 2, 1},
-        new() {6, 7, 9, 0, 1, 3},
-      }
-    );
+    Numerics.Matrix<double> numMatrix =
+      Numerics.Matrix<double>.Build.DenseOfArray(array);
 
-    client.SetMatrixB(
-      new List<List<double>> {
-        new() {7, 8, 2, 2, 4, 8},
-        new() {9, 3, 4, 6, 7, 8},
-        new() {2, 3, 3, 5, 4, 1},
-        new() {1, 6, 4, 2, 3, 7},
-        new() {5, 9, 1, 5, 4, 6},
-        new() {4, 2, 8, 3, 4, 1},
-      }
-    );
+    var inversed = numMatrix.Inverse();
+    var list = inversed.ConvertMatrixToList();
 
-    var a = await client.Start("../Servers.json");
+    client.SetMatrixA(list);
+    client.SetMatrixB(b);
 
-    a.ShowMatrix();
+    var result = await client.Start(path);
+    result.ShowMatrix();
   }
 }
+

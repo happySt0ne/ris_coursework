@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Net.Sockets;
 using System.Text;
 using Matrices;
@@ -7,25 +6,36 @@ using TcpLibrary;
 
 namespace Client;
 
-public  class Client { 
-  private  List<Task<List<Matrix>>> _tasks = new();
+public class Client { 
+  private List<Task<List<Matrix>>> _tasks = new();
 
-	private  BlockMatrix? _A;
-  private  BlockMatrix? _B;
-    
-  private  int _rowNumber = 0;
-  private  string? _serializedB;
+	private BlockMatrix? _A;
+  private BlockMatrix? _B;
+   
+  private int _rowNumber = 0;
+  private string? _serializedB;
 
-  public  void SetMatrixA(List<List<double>> a) {
+  public void SetMatrixA(List<List<double>> a) {
     _A = new(a);
   }
 
-  public  void SetMatrixB(List<List<double>> b) {
+  public void SetMatrixB(List<List<double>> b) {
     _B = new(b);
     _serializedB = JsonConvert.SerializeObject(_B);
   }
 
-  public  async Task<List<List<Matrix>>> Start(string pathToServers) {
+  public void SetMatrixB(double[,] b) {
+    _B = new(b);
+    _B.ShowMatrix();
+    _serializedB = JsonConvert.SerializeObject(_B);
+  }
+
+  public void SetMatrixB(List<double> b) {
+    _B = new(b);
+    _serializedB = JsonConvert.SerializeObject(_B);
+  }
+
+  public async Task<List<List<Matrix>>> Start(string pathToServers) {
     var settings = ServersHelper.ReadServers(pathToServers);
 
     await CreateTasks(settings);
@@ -37,7 +47,7 @@ public  class Client {
     return result;
   }
 
-  private  async Task CreateTasks(ServerSettings settings) {
+  private async Task CreateTasks(ServerSettings settings) {
     if (_A is null) {
       throw new NullReferenceException("A matrix is null!");
     }
@@ -59,7 +69,7 @@ public  class Client {
     }
   }
 
-  private  async Task<List<Matrix>> PushData(TcpClient client) {
+  private async Task<List<Matrix>> PushData(TcpClient client) {
     NetworkStream stream = client.GetStream();
 
     string jsonToSend = PrepareData();
@@ -70,7 +80,7 @@ public  class Client {
     return result;
   }
 
-  private  string PrepareData() {
+  private string PrepareData() {
     if (_A is null) 
       throw new NullReferenceException("matrix A is null");
     if (_B is null)
@@ -83,8 +93,8 @@ public  class Client {
     return jsonToSend;
   }
 
-  private  async Task SendData(string jsonToSend,
-                                     NetworkStream stream) {
+  private async Task SendData(string jsonToSend,
+                              NetworkStream stream) {
     byte[] dataBytes = Encoding.UTF8.GetBytes(jsonToSend);
     
     byte[] dataLengthBytes = BitConverter.GetBytes(dataBytes.Length);
@@ -94,7 +104,7 @@ public  class Client {
     await stream.WriteAsync(dataBytes, 0, dataBytes.Length);
   }
 
-  private  async Task<List<Matrix>> ReadResponce(
+  private async Task<List<Matrix>> ReadResponce(
       NetworkStream stream) {
     byte[] dataLengthBytes = new byte[4];
     stream.Read(dataLengthBytes, 0, 4);

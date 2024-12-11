@@ -1,4 +1,5 @@
 using Matrices;
+using Numerics = MathNet.Numerics.LinearAlgebra;
 
 namespace ListExt;
 
@@ -20,6 +21,18 @@ public static class ListExtensions {
     return sum;
   }
 
+  public static double[,] convertToArr(this List<List<double>> list) {
+    double[,] result = new double[list.Count, list.Count];
+
+    for (int i = 0; i < list.Count; ++i) {
+      for (int j = 0; j < list[0].Count; ++j) {
+        result[i, j] = list[i][j];
+      }
+    }
+
+    return result;
+  }
+
   public static void ShowMatrix(
       this List<List<Matrix>> blockMatrix) {
     for (int i = 0; i < blockMatrix.Count; ++i) {
@@ -36,6 +49,58 @@ public static class ListExtensions {
       row2.ForEach(i => System.Console.Write(i + " "));
       System.Console.WriteLine();
     }
+  }
+
+  public static List<T> Exact<T> (this List<T> list, in int colIndex) {
+    List<T> result = new();
+
+    for (int i = 0; i < list.Count; ++i) {
+      if (i == colIndex) continue;
+      
+      result.Add(list[i]);
+    } 
+
+    return result;
+  }
+
+  public static List<Matrix> Plus(this List<Matrix> first, List<Matrix> second) {
+    List<Matrix> result = new();
+
+    for (int i = 0; i < first.Count; ++i) {
+      result.Add(first[i] + second[i]);
+    }
+    
+    return result;
+  }
+
+  public static List<Matrix> Substract(this List<Matrix> first, List<Matrix> second) {
+    List<Matrix> result = new();
+
+    for (int i = 0; i < first.Count; ++i) {
+      result.Add(first[i] - second[i]);
+    }
+
+    return result;
+  } 
+
+  public static List<Matrix> MultiplyAsLists(this List<Matrix> first, List<Matrix> second) {
+    List<Matrix> result = new();
+
+    for (int i = 0; i < first.Count; ++i) {
+      result.Add(first[i]*second[i]);
+    }
+
+    return result;
+  }
+
+  public static List<Matrix> DivideBy(this List<Matrix> list, Matrix matrix) {
+    List<Matrix> result = new();
+
+    foreach (Matrix m in list) {
+      result.Add(m / matrix);
+    }
+
+    return result;
   }
 }
 
