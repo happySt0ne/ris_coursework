@@ -4,6 +4,7 @@ using System.Text;
 using Matrices;
 using Newtonsoft.Json;
 using TcpLibrary;
+using TcpLibrary.DataTypes;
 using ThreadArrExtension;
 
 namespace Servers;
@@ -11,13 +12,13 @@ namespace Servers;
 public partial class Server {
   private Thread[] _threads = null!;
   private readonly object _logLock = new();
-  private ConcurrentQueue<DataTransfer> _data = new();
-  private ConcurrentQueue<DataTransfer> _results = new();
 
-  private TcpClient _client; 
-
+  private TcpClient? _client; 
   private NetworkStream? _stream;
+
   private BlockMatrix? _B;
+  private ConcurrentQueue<List<Matrix>> _data = new();
+  private ConcurrentQueue<List<Matrix>> _results = new();
 
   private void StartThreads() {
     _threads = new Thread[3] {
@@ -31,12 +32,9 @@ public partial class Server {
 
   private void SendData() {
     while (!_tokenSource.Token.IsCancellationRequested) {
-      if (_results.TryDequeue(out DataTransfer? dataToSend)) {
+      if (_results.TryDequeue(out List<Matrix>? dataToSend)) {
         if (_stream is null) throw new NullReferenceException();
-        var a = SendCalculations(_stream, dataToSend);
-        
-        if (_address is null) throw new NullReferenceException();
-        PrintLog(_stream, a, _address.ToString());
+        SendCalculations(_stream, dataToSend);
       }
     } 
   }
@@ -59,10 +57,14 @@ public partial class Server {
   private void Calculate() {
     while (!_tokenSource.Token.IsCancellationRequested) {
       /*System.Console.WriteLine(_client?.ReceiveBufferSize);*/
-      if (_data.TryDequeue(out DataTransfer? data)) {
-        data.Result = data.Row * data.BlockMatrix;
+      if (_data.TryDequeue(out List<Matrix>? data)) {
+        if (_B is null) {
+          throw new NullReferenceException("matrix _B must be not null");
+        }
 
-        _results.Enqueue(data);
+        List<Matrix> result = data * _B;
+
+        _results.Enqueue(result);
       }
     }
   }
@@ -72,12 +74,12 @@ public partial class Server {
       if (_client is null && _listener.Pending()) {
         _client = _listener.AcceptTcpClient();
         _stream = _client.GetStream();
+        ReadDataFromClient();
         // TODO: тут потом очередь добавь.
       }  
 
       if (_client is not null) {
-        var readedData = ReadData(_stream);
-        _data.Enqueue(readedData);
+        ReadDataFromClient();
       } else {
         Thread.Sleep(100);
         continue;
@@ -86,44 +88,63 @@ public partial class Server {
     }
   }
 
-  private DataTransfer ReadData(NetworkStream stream) {
-    byte[] dataLengthBytes = new byte[4];
-    stream.Read(dataLengthBytes, 0, 4);
-    int dataLength = BitConverter.ToInt32(dataLengthBytes);
+  private void ReadDataFromClient() {
+    byte[] headerBytes = new byte[Header.SizeBytes];
+    _stream?.Read(headerBytes, 0, Header.SizeBytes);
+    Header header = Header.ConvertFromBytes(headerBytes);
 
-    byte[] data = new byte[dataLength];
-    stream.Read(data, 0, dataLength);
-    string message = Encoding.UTF8.GetString(data, 0, dataLength);
-
-    string[] separetedData = message.Split("||");
-
-    var row = 
-      JsonConvert.DeserializeObject<List<Matrix>>(separetedData[0]);
-    var blockMatrix = 
-      JsonConvert.DeserializeObject<BlockMatrix>(separetedData[1]);
-
-    if (row is null || blockMatrix is null) {
-      throw new NullReferenceException(
-        "data was not recieved");
+    switch (header.Action) {
+      case TcpActions.GetMatrixB:
+        ReadMatrixB(header.BodyLength);
+        break;
+      case TcpActions.GetMatrixA:
+        ReadMatrixA(header.BodyLength);
+        break;
+      case TcpActions.CloseConnection:
+        CloseConnection();
+        break;
     }
-
-    return new(row, blockMatrix);
   }
 
-  private DataTransfer SendCalculations(NetworkStream stream,
-                                        DataTransfer dataTransfer) {
-    List<Matrix> result = 
-      dataTransfer.Row * dataTransfer.BlockMatrix;
-    dataTransfer.Result = result;
+  private void CloseConnection() {
+    _B = null;
+    _stream?.Close();
+    _stream = null;
+    _client = null;
+  }
 
-    string responce = JsonConvert.SerializeObject(result);
+  private string ReadMatrix(int bodyLength) {
+    byte[] data = new byte[bodyLength];
+    _stream?.Read(data, 0, bodyLength);
+
+    string message = Encoding.UTF8.GetString(data, 0, bodyLength);
+    return message;
+  }
+
+  private void ReadMatrixB(int bodyLength) {
+    string message = ReadMatrix(bodyLength);
+    _B = JsonConvert.DeserializeObject<BlockMatrix>(message);
+  }
+
+  private void ReadMatrixA(int bodyLength) {
+    string message = ReadMatrix(bodyLength);
+    List<Matrix> row = JsonConvert.DeserializeObject<List<Matrix>>(message)!; 
+
+    _data.Enqueue(row);
+  }
+
+  private void SendCalculations(NetworkStream stream,
+                                List<Matrix> dataTransfer) {
+    /*List<Matrix> result = */
+    /*  dataTransfer.Row * dataTransfer.BlockMatrix;*/
+    /*dataTransfer.Result = result;*/
+
+    string responce = JsonConvert.SerializeObject(dataTransfer);
     byte[] data = Encoding.UTF8.GetBytes(responce);
 
     byte[] dataLengthBytes = BitConverter.GetBytes(data.Length);
     stream.Write(dataLengthBytes, 0, dataLengthBytes.Length);
 
     stream.Write(data, 0, data.Length);
-
-    return dataTransfer;
   }
 }

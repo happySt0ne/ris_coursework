@@ -1,8 +1,10 @@
 using System.Net.Sockets;
 using System.Text;
+using Client.Support;
 using Matrices;
 using Newtonsoft.Json;
 using TcpLibrary;
+using TcpLibrary.DataTypes;
 
 namespace Client;
 
@@ -15,7 +17,7 @@ public class Client {
   private BlockMatrix? _B;
    
   private int _rowNumber = 0;
-  private string? _serializedB;
+  private string _serializedB = null!;
 
   public void SetMatrixA(List<List<double>> a) {
     _A = new(a);
@@ -44,6 +46,9 @@ public class Client {
     await CreateTasks(_settings);
     await Task.WhenAll(_tasks);
 
+    _streams.ForEach(async s =>
+      await SendData(TcpActions.CloseConnection, string.Empty, s));
+
     List<List<Matrix>> result =
       _tasks.Select(t => t.Result).ToList();
 
@@ -61,10 +66,13 @@ public class Client {
       TcpClient client = new();
 
       await client.ConnectAsync(server.Ip, server.Port);
-      Console.WriteLine($"подключено к серверу" +
+      Console.WriteLine($"подключено к серверу " +
                         $"{server.Ip}:{server.Port}");
 
       NetworkStream stream = client.GetStream();
+
+      var a = PrepareData(SendOptions.SendB);
+      await SendData(TcpActions.GetMatrixB, a, stream);
 
       _streams.Add(stream);
       _clients.Add(client);
@@ -79,33 +87,62 @@ public class Client {
 
   private async Task<List<Matrix>> PushData(int queueIndex) {
     string jsonToSend = PrepareData();
-    await SendData(jsonToSend, queueIndex);
+    await SendData(TcpActions.GetMatrixA, jsonToSend, queueIndex);
     var result = await ReadResponce(_streams[queueIndex]);
 
     return result;
   }
 
-  private string PrepareData() {
+  private string PrepareData(SendOptions option = SendOptions.SendA) {
+    if (option is SendOptions.SendB) {
+      if (_B is null)
+        throw new NullReferenceException("matrix B is null");
+
+      return _serializedB;
+    }
+
     if (_A is null) 
       throw new NullReferenceException("matrix A is null");
-    if (_B is null)
-      throw new NullReferenceException("matrix B is null");
 
     List<Matrix> list = _A.GetRow(_rowNumber++);
     string rowJson = JsonConvert.SerializeObject(list);
-    string jsonToSend = $"{rowJson}||{_serializedB}";
 
-    return jsonToSend;
+    return rowJson;
   }
 
-  private async Task SendData(string jsonToSend, int index) {
-    NetworkStream stream = _streams[index];
-    byte[] dataBytes = Encoding.UTF8.GetBytes(jsonToSend);
-    
-    byte[] dataLengthBytes = BitConverter.GetBytes(dataBytes.Length);
-    await stream.WriteAsync(dataLengthBytes, 0, dataLengthBytes.Length);
+  private string PrepareA() {
+    if (_A is null)
+      throw new NullReferenceException("matrix A is null");
 
-    System.Console.WriteLine($"Данные отправлены на сервер {_settings?.Servers[index]}");
+    List<Matrix> list = _A.GetRow(_rowNumber++);
+    string rowJson = JsonConvert.SerializeObject(list);
+
+    return rowJson;
+  }
+
+  private async Task SendData(TcpActions action,
+                              string jsonToSend,
+                              int index) {
+    NetworkStream stream = _streams[index];
+
+    await SendData(action, jsonToSend, stream);
+
+    System.Console.WriteLine(
+      "Данные отправлены " + 
+      $"на сервер {_settings?.Servers[index]}"
+    );
+  }
+
+  private async Task SendData(TcpActions action,
+                              string jsonToSend,
+                              NetworkStream stream) {
+    byte[] dataBytes = Encoding.UTF8.GetBytes(jsonToSend);
+
+    Header header = new(action, dataBytes.Length);
+    var headerBytes = header.ConvertToBytes();
+
+    await stream.WriteAsync(headerBytes, 0, Header.SizeBytes);
+
     await stream.WriteAsync(dataBytes, 0, dataBytes.Length);
   }
 

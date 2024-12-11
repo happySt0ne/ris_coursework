@@ -1,6 +1,6 @@
 namespace TcpLibrary.DataTypes;
 
-public enum Actions : int {
+public enum TcpActions : int {
   GetMatrixB, 
   GetMatrixA,
   CloseConnection
