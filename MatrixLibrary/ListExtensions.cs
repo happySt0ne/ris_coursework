@@ -33,8 +33,8 @@ public static class ListExtensions {
     return result;
   }
 
-  public static void ShowMatrix(
-      this List<List<Matrix>> blockMatrix) {
+  public static void ShowMatrix(this List<List<Matrix>> blockMatrix,
+                                bool isUneven = true) {
     for (int i = 0; i < blockMatrix.Count; ++i) {
       List<double> row = new();
       List<double> row2 = new();
@@ -46,6 +46,9 @@ public static class ListExtensions {
       
       row.ForEach(i => System.Console.Write(i + " "));
       System.Console.WriteLine();
+
+      if (isUneven && blockMatrix.Count - 1 == i ) return;
+
       row2.ForEach(i => System.Console.Write(i + " "));
       System.Console.WriteLine();
     }

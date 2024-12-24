@@ -75,7 +75,6 @@ public partial class Server {
         _client = _listener.AcceptTcpClient();
         _stream = _client.GetStream();
         ReadDataFromClient();
-        // TODO: тут потом очередь добавь.
       }  
 
       if (_client is not null) {

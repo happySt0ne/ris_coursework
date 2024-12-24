@@ -12,6 +12,8 @@ public class BlockMatrix {
 
   public BlockMatrix() => MatrixData = new();
 
+  public bool IsUneven { get; private set; }
+
   public Matrix this[int i, int j] {
     get {
       return MatrixData[i][j];
@@ -55,10 +57,6 @@ public class BlockMatrix {
     MatrixData = new();
     List<Matrix> matrices = new();
 
-    /*for (int i = 0; i < vector.Count; i += 2) {*/
-    /*  matrices.Add(); */
-    /*}*/
-
     for (int i = 0; i < vector.Count; i++) {
       MatrixData.Add(new() {vector[i]});
     }
@@ -68,25 +66,78 @@ public class BlockMatrix {
     List<Matrix> matrices = new();
     MatrixData = new();
 
+    IsUneven = (matrix.Count % 2 != 0);
+
     for (int i = 0; i < matrix.Count; i += 2) {
       for (int j = 0; j < matrix[0].Count; j += 2) {
         List<List<double>> z = new();
 
-        z.Add(new List<double> {matrix[i][j], matrix[i][j+1]});
-        z.Add(new List<double> {matrix[i+1][j], matrix[i+1][j+1]});
+        double rightHight;
+        double rightLow;
+
+        if (IsUneven && matrix.Count - 1 == j) {
+          rightHight = 0;
+          rightLow = 0;
+        } else {
+          rightHight = matrix[i][j+1];
+          try {
+            rightLow = matrix[i+1][j+1];
+          } catch { 
+            rightLow = 0;
+          }
+        }
+
+        if (IsUneven && matrix.Count - 1 == i) {
+          z.Add(new List<double> { matrix[i][j], rightHight });
+          z.Add(new List<double> { 0,  0 });
+        } else {
+          z.Add(new List<double> { matrix[i][j], rightHight });
+          z.Add(new List<double> { matrix[i+1][j], rightLow });
+        }
 
         matrices.Add(new(z));
       }
     }
 
     var newMatrixLenght = matrix.Count / 2;
+    newMatrixLenght += IsUneven ? 1 : 0;
 
     for (int i = 0; i < matrices.Count; i += newMatrixLenght) {
       MatrixData.Add(matrices[i..(i + newMatrixLenght)]);
     }
   }
+
+  public BlockMatrix (in double[,] arr, BlockMatrixOption option = BlockMatrixOption.Vector) {
+    if (option is BlockMatrixOption.Matrix) {
+      new BlockMatrix(arr);
+      return;
+    }
+
+    IsUneven = (arr.GetLength(0) % 2) != 0;
+
+    List<Matrix> matrices = new();
+    MatrixData = new();
+
+    for (int i = 0; i < arr.GetLength(0); i += 2) {
+      List<List<double>> z = new();
+
+      z.Add(new() {arr[i, 0]});
+      
+      if (IsUneven && arr.GetLength(0) - 1 == i) {
+        z.Add(new() {0});
+      } else {
+        z.Add(new() {arr[i+1, 0]});
+      }
+
+      matrices.Add(new(z));
+    }
+
+    for (int i = 0; i < matrices.Count; i++ ) {
+      MatrixData.Add(new() {matrices[i]});
+    }
+  }
   
-  public BlockMatrix(in double[,] arr) {
+  private BlockMatrix(in double[,] arr) {
     List<Matrix> matrices = new();
     MatrixData = new();
 
