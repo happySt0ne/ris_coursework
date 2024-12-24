@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Client.Extensions;
 using CommandLine;
 
@@ -33,6 +34,8 @@ public static class Input {
         var line = reader.ReadLine();
 
         if (line is null) return result.CastToArray();
+
+        line = Regex.Replace(line, @"\s+", " ");
 
         lineValue = line.Trim().Split(" ").Select(double.Parse).ToList();
         result.Add(lineValue);
