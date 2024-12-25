@@ -38,7 +38,7 @@ public partial class Server : IDisposable {
   }
   
   public void Start() {
-    _listener.Start();
+    _listener.Start(3);
 
     System.Console.WriteLine($"server started at: {Address}");
 
